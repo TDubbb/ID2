@@ -1,0 +1,64 @@
+
+function Import_Backlog_Data() {
+
+  
+  // select copy & paste sheet locations
+  var CopySheet = SpreadsheetApp.openById('1kH-oADPubkrzcTpVKjM0s8pDSUOwP6zlyj64yNd8IP8').getSheetByName('Open Orders');
+  var PasteSheet = SpreadsheetApp.openById('129FP4Iqa3HOX_409u2GTBaOKEX7BBVW7xBHr3bPrQwg').getSheetByName('Scripted - Open Orders');
+
+  // Count the number of rows of data in both the CopySheet and PasteSheet
+  var CSlastRow = CopySheet.getLastRow();
+  var PSlastRow = CopySheet.getLastRow();
+
+  // clears target sheet
+  PasteSheet.getRange(3,1,PSlastRow,36).clear({contentsOnly:true})
+
+  //Get Data from copy sheet
+  var CopyData = CopySheet.getRange(3,1,CSlastRow-2,36).getValues()
+
+  // provide location to paste data in the target sheet
+  var PasteData = PasteSheet.getRange(3,1,CSlastRow-2,36);
+
+  // paste values from copy sheet into target sheet
+  PasteData.setValues(CopyData)
+  
+  // run functions to capture timestamp and user email whent he script is ran
+
+  Timestamp()
+  Get_Email()
+}
+  //-----------------------------------------------------------------------------------------------------------------------//
+function Timestamp() {
+ SpreadsheetApp.openById('129FP4Iqa3HOX_409u2GTBaOKEX7BBVW7xBHr3bPrQwg').getSheetByName('Scripted - Open Orders')
+ //.getRange('F1').setValue(Utilities.formatDate(new Date(), "GMT-6:00", "MMM-dd-yyyy hh:mm") + " PST")
+
+.getRange('F1').setValue("Last Refresh Time: " + new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }) + " Central")
+
+
+}
+  
+  //------------------------------------------------------------------------------------------------------------------------//
+
+function Get_Email() {
+  var userEmail = PropertiesService.getUserProperties().getProperty("userEmail");
+  if(!userEmail) {
+    var protection = SpreadsheetApp.getActive().getRange("A1").protect();
+    // tric: the owner and user can not be removed
+    protection.removeEditors(protection.getEditors());
+    var editors = protection.getEditors();
+    if(editors.length === 2) {
+      var owner = SpreadsheetApp.getActive().getOwner();
+      editors.splice(editors.indexOf(owner),1); // remove owner, take the user
+    }
+    userEmail = editors[0];
+    protection.remove();
+    // saving for better performance next run
+    PropertiesService.getUserProperties().setProperty("userEmail",userEmail);
+  }
+
+  SpreadsheetApp.openById('129FP4Iqa3HOX_409u2GTBaOKEX7BBVW7xBHr3bPrQwg').getSheetByName('Scripted - Open Orders')
+ .getRange('E1').setValue("Last Refresh Ran By: " + userEmail)
+}
+
+
+
