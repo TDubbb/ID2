@@ -1,0 +1,18 @@
+function FP_Import_Files_From_Gmail() {
+    try{
+      //Import email
+      var emailThreads = GmailApp.search("label:flexport-daily-report from:(support@flexport.com) subject:(Container Detail)"); // enter search criteria here
+      var emailMessage = emailThreads[0].getMessages()[0];
+      var emailAttachment = emailMessage.getAttachments()[0];
+      var emailSheet = SpreadsheetApp.openById('1hVmOHiKglurK3yOThJuwZBm9NSSNQO_vaTrCWg_PY54').getSheetByName('Scripted - FP Data');
+      var emailCSVData = Utilities.parseCsv(emailAttachment.getDataAsString(), ",");
+  
+      emailSheet.clearContents().clearFormats(); // clears target sheet
+      emailSheet.getRange(1, 1, emailCSVData.length, emailCSVData[0].length).setValues(emailCSVData); // adds data to the sheet
+  
+      //emailMessage.moveToTrash();
+      } catch (e){
+       throw new Error("FP Report from email update failed.");
+    }
+  
+  }  
